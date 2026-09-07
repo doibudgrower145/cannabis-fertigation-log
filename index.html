@@ -67,15 +67,21 @@
                 <button type="button" onclick="addRunoffPoint()" class="mt-2 text-xs text-emerald-600 font-semibold hover:underline">+ เพิ่มจุดวัด (สูงสุด 10 จุด)</button>
             </div>
 
-            <button type="submit" id="submitBtn" class="w-full bg-emerald-600 text-white font-bold p-3 rounded-lg shadow hover:bg-emerald-700 transition">
-                บันทึกและให้ AI วิเคราะห์รายวัน 🤖
-            </button>
+            <!-- ปุ่มส่งข้อมูลแยก 2 รูปแบบ -->
+            <div class="space-y-2 pt-2">
+                <button type="button" onclick="submitData('normal')" id="btnNormal" class="w-full bg-emerald-600 text-white font-bold p-3 rounded-lg shadow hover:bg-emerald-700 transition">
+                    📝 บันทึก & วิเคราะห์รอบนี้ (รอบปกติ)
+                </button>
+                <button type="button" onclick="submitData('final')" id="btnFinal" class="w-full bg-amber-600 text-white font-bold p-3 rounded-lg shadow hover:bg-amber-700 transition">
+                    🤖 บันทึกรอบสุดท้าย & สรุปภาพรวมรายวัน (วางแผนพรุ่งนี้)
+                </button>
+            </div>
         </form>
     </div>
 
     <!-- ผลลัพธ์การวิเคราะห์จาก AI -->
     <div id="resultBox" class="hidden bg-white shadow-md rounded-xl p-6 border-l-4 border-emerald-500 mb-6">
-        <h2 class="font-bold text-gray-800 mb-2">📊 ผลวิเคราะห์ภาพรวมรายวัน & แผนวันพรุ่งนี้</h2>
+        <h2 id="resultTitle" class="font-bold text-gray-800 mb-2">📊 ผลวิเคราะห์จาก AI</h2>
         <div id="aiResponseText" class="text-sm text-gray-600 whitespace-pre-line bg-gray-50 p-3 rounded-lg"></div>
     </div>
 
@@ -107,11 +113,25 @@
             updatePointCount();
         }
 
-        document.getElementById('nutrientForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.innerText = 'กำลังให้ AI วิเคราะห์ข้อมูลตลอดวัน... ⏳';
+        async function submitData(analysisType) {
+            // ตรวจสอบความถูกต้องของฟอร์มเบื้องต้น
+            const form = document.getElementById('nutrientForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const btnNormal = document.getElementById('btnNormal');
+            const btnFinal = document.getElementById('btnFinal');
+            
+            btnNormal.disabled = true;
+            btnFinal.disabled = true;
+
+            if (analysisType === 'normal') {
+                btnNormal.innerText = 'กำลังวิเคราะห์รอบนี้... ⏳';
+            } else {
+                btnFinal.innerText = 'กำลังสรุปภาพรวมรายวัน... ⏳';
+            }
 
             const ecInputs = document.querySelectorAll('.runoff-ec');
             const phInputs = document.querySelectorAll('.runoff-ph');
@@ -125,7 +145,8 @@
                 stage: document.getElementById('growthStage').value,
                 inflowEC: document.getElementById('inflowEC').value,
                 inflowPH: document.getElementById('inflowPH').value,
-                runoff: runoffList
+                runoff: runoffList,
+                type: analysisType // ส่งประเภทการวิเคราะห์ไปหลังบ้าน ('normal' หรือ 'final')
             };
 
             try {
@@ -137,15 +158,20 @@
                 const result = await response.json();
                 
                 document.getElementById('resultBox').classList.remove('hidden');
+                document.getElementById('resultTitle').innerText = analysisType === 'final' 
+                    ? '📊 สรุปภาพรวมรายวัน & แผนสำหรับวันพรุ่งนี้' 
+                    : '📊 ผลวิเคราะห์รอบนี้ (รอบปกติ)';
                 document.getElementById('aiResponseText').innerText = result.aiAnalysis;
             } catch (err) {
                 alert('เกิดข้อผิดพลาดในการเชื่อมต่อระบบ');
                 console.error(err);
             } finally {
-                btn.disabled = false;
-                btn.innerText = 'บันทึกและให้ AI วิเคราะห์รายวัน 🤖';
+                btnNormal.disabled = false;
+                btnFinal.disabled = false;
+                btnNormal.innerText = '📝 บันทึก & วิเคราะห์รอบนี้ (รอบปกติ)';
+                btnFinal.innerText = '🤖 บันทึกรอบสุดท้าย & สรุปภาพรวมรายวัน (วางแผนพรุ่งนี้)';
             }
-        });
+        }
     </script>
 </body>
 </html>
