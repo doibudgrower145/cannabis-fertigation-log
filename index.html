@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกและวิเคราะห์การให้น้ำปุ๋ย กัญชา (COCO)</title>
+    <title>ระบบบันทึกและวิเคราะห์การให้น้ำปุ๋ย (COCO)</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 font-sans p-4 max-w-lg mx-auto">
     <div class="bg-white shadow-md rounded-xl p-6 mb-6">
-        <h1 class="text-xl font-bold text-emerald-700 mb-4 text-center">🌿 บันทึกการให้ปุ๋ยกัญชา</h1>
+        <h1 class="text-xl font-bold text-emerald-700 mb-4 text-center">🌿 บันทึกการให้ปุ๋ยรายวัน</h1>
         
         <form id="nutrientForm" class="space-y-4">
             <!-- ผู้บันทึก -->
@@ -40,41 +40,42 @@
                 </div>
             </div>
 
-            <!-- ค่า Run-off 3-5 จุด -->
+            <!-- ค่า Run-off สูงสุด 10 จุด -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">ค่า Run-off (วัด 3-5 จุด)</label>
-                <div id="runoffContainer" class="space-y-2">
-                    <!-- จุดที่ 1 -->
+                <div class="flex justify-between items-center mb-1">
+                    <label class="block text-sm font-medium text-gray-700">ค่า Run-off (วัดได้สูงสุด 10 จุด)</label>
+                    <span id="pointCountText" class="text-xs text-emerald-600 font-semibold">3 / 10 จุด</span>
+                </div>
+                <div id="runoffContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    <!-- จุดที่ 1-3 (เริ่มต้น) -->
                     <div class="flex gap-2 items-center">
                         <span class="text-xs text-gray-500 w-12">จุด 1</span>
                         <input type="number" step="0.1" placeholder="EC" class="runoff-ec w-1/2 border p-1.5 rounded text-sm" required>
                         <input type="number" step="0.1" placeholder="pH" class="runoff-ph w-1/2 border p-1.5 rounded text-sm" required>
                     </div>
-                    <!-- จุดที่ 2 -->
                     <div class="flex gap-2 items-center">
                         <span class="text-xs text-gray-500 w-12">จุด 2</span>
                         <input type="number" step="0.1" placeholder="EC" class="runoff-ec w-1/2 border p-1.5 rounded text-sm" required>
                         <input type="number" step="0.1" placeholder="pH" class="runoff-ph w-1/2 border p-1.5 rounded text-sm" required>
                     </div>
-                    <!-- จุดที่ 3 -->
                     <div class="flex gap-2 items-center">
                         <span class="text-xs text-gray-500 w-12">จุด 3</span>
                         <input type="number" step="0.1" placeholder="EC" class="runoff-ec w-1/2 border p-1.5 rounded text-sm" required>
                         <input type="number" step="0.1" placeholder="pH" class="runoff-ph w-1/2 border p-1.5 rounded text-sm" required>
                     </div>
                 </div>
-                <button type="button" onclick="addRunoffPoint()" class="mt-2 text-xs text-emerald-600 font-semibold hover:underline">+ เพิ่มจุดวัด (สูงสุด 5 จุด)</button>
+                <button type="button" onclick="addRunoffPoint()" class="mt-2 text-xs text-emerald-600 font-semibold hover:underline">+ เพิ่มจุดวัด (สูงสุด 10 จุด)</button>
             </div>
 
             <button type="submit" id="submitBtn" class="w-full bg-emerald-600 text-white font-bold p-3 rounded-lg shadow hover:bg-emerald-700 transition">
-                บันทึกและให้ AI วิเคราะห์ 🤖
+                บันทึกและให้ AI วิเคราะห์รายวัน 🤖
             </button>
         </form>
     </div>
 
     <!-- ผลลัพธ์การวิเคราะห์จาก AI -->
     <div id="resultBox" class="hidden bg-white shadow-md rounded-xl p-6 border-l-4 border-emerald-500 mb-6">
-        <h2 class="font-bold text-gray-800 mb-2">📊 ผลวิเคราะห์ & คำแนะนำจาก AI</h2>
+        <h2 class="font-bold text-gray-800 mb-2">📊 ผลวิเคราะห์ภาพรวมรายวัน & แผนวันพรุ่งนี้</h2>
         <div id="aiResponseText" class="text-sm text-gray-600 whitespace-pre-line bg-gray-50 p-3 rounded-lg"></div>
     </div>
 
@@ -84,10 +85,16 @@
     </div>
 
     <script>
+        function updatePointCount() {
+            const container = document.getElementById('runoffContainer');
+            const count = container.children.length;
+            document.getElementById('pointCountText').innerText = `${count} / 10 จุด`;
+        }
+
         function addRunoffPoint() {
             const container = document.getElementById('runoffContainer');
             const count = container.children.length + 1;
-            if (count > 5) return alert('จำกัดสูงสุด 5 จุดครับ');
+            if (count > 10) return alert('จำกัดสูงสุด 10 จุดครับ');
             
             const div = document.createElement('div');
             div.className = 'flex gap-2 items-center';
@@ -97,15 +104,15 @@
                 <input type="number" step="0.1" placeholder="pH" class="runoff-ph w-1/2 border p-1.5 rounded text-sm" required>
             `;
             container.appendChild(div);
+            updatePointCount();
         }
 
         document.getElementById('nutrientForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.innerText = 'กำลังให้ AI วิเคราะห์และบันทึก... ⏳';
+            btn.innerText = 'กำลังให้ AI วิเคราะห์ข้อมูลตลอดวัน... ⏳';
 
-            // รวบรวมข้อมูลค่า Run-off ทั้งหมด
             const ecInputs = document.querySelectorAll('.runoff-ec');
             const phInputs = document.querySelectorAll('.runoff-ph');
             let runoffList = [];
@@ -136,7 +143,7 @@
                 console.error(err);
             } finally {
                 btn.disabled = false;
-                btn.innerText = 'บันทึกและให้ AI วิเคราะห์ 🤖';
+                btn.innerText = 'บันทึกและให้ AI วิเคราะห์รายวัน 🤖';
             }
         });
     </script>
