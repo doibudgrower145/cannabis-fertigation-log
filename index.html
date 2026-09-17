@@ -12,7 +12,7 @@
     
     <!-- ครอบพื้นที่ทั้งหมดตั้งแต่หัวข้อฟอร์มจนถึงผลวิเคราะห์ด้วย id="captureArea" -->
     <div id="captureArea" class="bg-white shadow-md rounded-xl p-6 mb-4 space-y-4">
-        <h1 class="text-xl font-bold text-emerald-700 mb-2 text-center">🌿 บันทึกการให้ปุ๋ยรายวัน 🌿</h1>
+        <h1 class="text-xl font-bold text-emerald-700 mb-2 text-center">🌿 บันทึกการให้ปุ๋ยรายวัน</h1>
         
         <form id="nutrientForm" class="space-y-4">
             <!-- ผู้บันทึก -->
@@ -71,9 +71,15 @@
             </div>
         </form>
 
-        <!-- ผลลัพธ์การวิเคราะห์จาก AI (จะอยู่ในกรอบรูปเดียวกันเมื่อกดวิเคราะห์แล้ว) -->
+        <!-- ผลลัพธ์การวิเคราะห์จาก AI (อยู่ในกรอบรูปเดียวกัน) -->
         <div id="resultBox" class="hidden pt-4 border-t border-gray-200">
-            <h2 id="resultTitle" class="font-bold text-gray-800 mb-2">📊 ผลวิเคราะห์จาก AI</h2>
+            <!-- ย้ายปุ่มดาวน์โหลดมาไว้ตรงหัวข้อผลวิเคราะห์ กดปุ๊บติดภาพทันที -->
+            <div class="flex justify-between items-center mb-2">
+                <h2 id="resultTitle" class="font-bold text-gray-800">📊 ผลวิเคราะห์จาก AI</h2>
+                <button type="button" id="btnDownloadImg" onclick="downloadResultImage()" class="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded shadow hover:bg-blue-700 transition flex items-center gap-1">
+                    📥 ดาวน์โหลดรูปภาพ
+                </button>
+            </div>
             <div id="aiResponseText" class="text-sm text-gray-600 whitespace-pre-line bg-gray-50 p-3 rounded-lg border border-gray-100"></div>
         </div>
 
@@ -83,18 +89,13 @@
         </div>
     </div>
 
-    <!-- ปุ่มกดทำงาน (แยกออกมานอกกรอบรูป เพื่อไม่ให้ติดปุ่มกดลงไปในรูปภาพ) -->
-    <div class="space-y-2 mb-4">
+    <!-- ปุ่มกดทำงานหลัก (แยกอยู่นอกกรอบรูป) -->
+    <div class="space-y-2 mb-8">
         <button type="button" onclick="submitData('normal')" id="btnNormal" class="w-full bg-emerald-600 text-white font-bold p-3 rounded-lg shadow hover:bg-emerald-700 transition">
             📝 บันทึก & วิเคราะห์รอบนี้ (รอบปกติ)
         </button>
         <button type="button" onclick="submitData('final')" id="btnFinal" class="w-full bg-amber-600 text-white font-bold p-3 rounded-lg shadow hover:bg-amber-700 transition">
             🤖 บันทึกรอบสุดท้าย & สรุปภาพรวมรายวัน (วางแผนพรุ่งนี้)
-        </button>
-        
-        <!-- ปุ่มดาวน์โหลดรูปภาพ (จะแสดงขึ้นมาหลังจากได้ผลวิเคราะห์) -->
-        <button type="button" id="btnDownloadImg" onclick="downloadResultImage()" class="hidden w-full bg-blue-600 text-white text-sm font-bold p-3 rounded-lg shadow hover:bg-blue-700 transition flex items-center justify-center gap-2">
-            📥 ดาวน์โหลดรายงานทั้งหมดเป็นรูปภาพ (พร้อมแชร์)
         </button>
     </div>
 
@@ -170,10 +171,7 @@
                     : '📊 ผลวิเคราะห์รอบนี้ (รอบปกติ)';
                 document.getElementById('aiResponseText').innerText = result.aiAnalysis;
                 
-                // แสดงปุ่มดาวน์โหลดรูปภาพ
-                document.getElementById('btnDownloadImg').classList.remove('hidden');
-                
-                // เลื่อนหน้าจอลงมาให้เห็นผลลัพธ์
+                // เลื่อนหน้าจอลงมาให้เห็นผลลัพธ์และปุ่มดาวน์โหลดชัดเจน
                 document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth' });
 
             } catch (err) {
